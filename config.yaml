@@ -1,7 +1,7 @@
 # Configuration file for rated-cli.
 
 rated:
-  ratedApiEndpoint: https://api.rated.network/
+  apiEndpoint: https://api.rated.network/
   watcher:
     refreshRateInSeconds: 600
     validationKeys:

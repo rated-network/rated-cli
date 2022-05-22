@@ -2,11 +2,15 @@ package cmd
 
 import (
 	"os"
+	"time"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/skillz-blockchain/rated-cli/pkg/core"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
+
+var cfg core.Config
 
 var cfgFile string
 
@@ -40,12 +44,17 @@ func initConfig() {
 		viper.SetConfigName(".rated-cli")
 	}
 
+	viper.SetEnvPrefix("rated")
 	viper.AutomaticEnv()
 
 	err := viper.ReadInConfig()
 	if err != nil {
 		log.WithError(err).Fatal("unable to read configuration file")
 	}
+
+	cfg.ApiEndpoint = viper.GetString("rated.apiEndpoint")
+	cfg.WatcherValidationKeys = viper.GetStringSlice("rated.watcher.validationKeys")
+	cfg.WatcherRefreshRate = time.Second * time.Duration(viper.GetInt64("rated.watcher.refreshRateInSeconds"))
 
 	log.WithFields(log.Fields{
 		"config": viper.ConfigFileUsed(),
