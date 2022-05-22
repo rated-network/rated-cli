@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -42,7 +42,12 @@ func initConfig() {
 
 	viper.AutomaticEnv()
 
-	if err := viper.ReadInConfig(); err == nil {
-		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
+	err := viper.ReadInConfig()
+	if err != nil {
+		log.WithError(err).Fatal("unable to read configuration file")
 	}
+
+	log.WithFields(log.Fields{
+		"config": viper.ConfigFileUsed(),
+	}).Info("successfully read configuration file")
 }
