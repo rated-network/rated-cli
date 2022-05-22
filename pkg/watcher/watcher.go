@@ -14,6 +14,7 @@ type Watcher struct {
 func NewWatcher(cfg *core.Config) *Watcher {
 
 	log.WithFields(log.Fields{
+		"beacon-api-endpoint": cfg.BeaconEndpoint,
 		"rated-api-endpoint": cfg.ApiEndpoint,
 		"keys-to-watch":      len(cfg.WatcherValidationKeys),
 		"refresh-rate":       cfg.WatcherRefreshRate,
@@ -22,6 +23,18 @@ func NewWatcher(cfg *core.Config) *Watcher {
 	return &Watcher{
 		cfg: cfg,
 	}
+}
+
+func (w *Watcher) watchKeys() error {
+	for _, key := range(w.cfg.WatcherValidationKeys) {
+		log.WithFields(log.Fields{
+			"validation-key": key,
+		}).Info("fetching statistics about key")
+
+		
+	}
+
+	return nil
 }
 
 func (w *Watcher) Watch() error {
@@ -34,6 +47,12 @@ func (w *Watcher) Watch() error {
 			"start-at": startAt,
 			"next-at": nextAt,
 		}).Info("starting new iteration")
+
+		err := w.watchKeys()
+		if err != nil {
+			log.WithError(err).Error("unable to watch keys")
+			return err
+		}
 
 		sleepFor := time.Until(nextAt)
 		log.WithFields(log.Fields{

@@ -2,6 +2,7 @@
 
 rated:
   apiEndpoint: https://api.rated.network/
+  beaconEndpoint: http://localhost:5054/
   watcher:
     refreshRateInSeconds: 600
     validationKeys:
