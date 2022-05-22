@@ -67,7 +67,8 @@ func NewWatcher(cfg *core.Config) (*Watcher, error) {
 	}
 
 	return &Watcher{
-		cfg: cfg,
+		cfg:  cfg,
+		keys: keys,
 	}, nil
 }
 
@@ -79,15 +80,35 @@ func (w *Watcher) Watch() error {
 		startAt := time.Now()
 		nextAt := startAt.Add(time.Duration(w.cfg.WatcherRefreshRate))
 		log.WithFields(log.Fields{
-			"start-at": startAt,
-			"next-at":  nextAt,
+			"start-at":        startAt,
+			"next-at":         nextAt,
+			"validation-keys": len(w.keys),
 		}).Info("starting new iteration")
 
 		for _, key := range w.keys {
 			log.WithFields(log.Fields{
-				"validation-key": key.publicKey,
+				"validation-key":       key.publicKey,
 				"validation-key-index": key.index,
 			}).Info("fetching statistics about key")
+
+			stats, err := getValidationStatistics(w.cfg, &key)
+			if err != nil {
+				log.WithError(err).WithFields(log.Fields{
+					"validation-key":       key.publicKey,
+					"validation-key-index": key.index,
+				}).Warn("unable to fetch statistics about key, skipped")
+				continue
+			}
+
+			log.WithFields(log.Fields{
+				"validation-key":          key.publicKey,
+				"validation-key-index":    key.index,
+				"uptime":                  stats.Uptime,
+				"avg-correctness":         stats.AvgCorrectness,
+				"attester-effectiveness":  stats.AttesterEffectiveness,
+				"proposer-effectiveness":  stats.ProposerEffectiveness,
+				"validator-effectiveness": stats.ValidatorEffectiveness,
+			}).Info("fetched statistics about key from rated network")
 		}
 
 		sleepFor := time.Until(nextAt)
