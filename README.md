@@ -1,3 +1,3 @@
-# Rated Companion
+# Rated CLI
 
-A tool to monitor a set of Ethereum public keys using [Rated's API](https://api.rated.network/docs).
+A tool to interact with the [Rated Network API](https://api.rated.network/docs).

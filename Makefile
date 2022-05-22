@@ -1,4 +1,4 @@
-BINARY_NAME=rated
+BINARY_NAME=rated-cli
 
 all: build
 
@@ -6,7 +6,7 @@ setup:
 	go mod download
 
 build:
-	go build -v -o bin/$(BINARY_NAME) ./cmd/main.go
+	go build -v -o bin/$(BINARY_NAME) main.go
 
 
 clean:
