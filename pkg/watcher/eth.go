@@ -25,7 +25,7 @@ type getStateValidationData struct {
 
 // GetValidationIndex fetches the index of a validation on the blockchain.
 func getValidationIndex(cfg *core.Config, validationKey string) (int, error) {
-	url := fmt.Sprintf("%s/eth/v1/beacon/states/head/validations/%s", cfg.BeaconEndpoint, validationKey)
+	url := fmt.Sprintf("%s/eth/v1/beacon/states/head/validators/%s", cfg.BeaconEndpoint, validationKey)
 
 	log.WithFields(log.Fields{
 		"url": url,

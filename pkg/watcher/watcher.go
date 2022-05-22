@@ -71,16 +71,7 @@ func NewWatcher(cfg *core.Config) (*Watcher, error) {
 	}, nil
 }
 
-func (w *Watcher) watchKeys() error {
-	for _, key := range w.cfg.WatcherValidationKeys {
-		log.WithFields(log.Fields{
-			"validation-key": key,
-		}).Info("fetching statistics about key")
-	}
-
-	return nil
-}
-
+// Watch continuously fetches statistics about validation keys on rated.network.
 func (w *Watcher) Watch() error {
 	log.Info("starting to watch keys")
 
@@ -92,10 +83,11 @@ func (w *Watcher) Watch() error {
 			"next-at":  nextAt,
 		}).Info("starting new iteration")
 
-		err := w.watchKeys()
-		if err != nil {
-			log.WithError(err).Error("unable to watch keys")
-			return err
+		for _, key := range w.keys {
+			log.WithFields(log.Fields{
+				"validation-key": key.publicKey,
+				"validation-key-index": key.index,
+			}).Info("fetching statistics about key")
 		}
 
 		sleepFor := time.Until(nextAt)
