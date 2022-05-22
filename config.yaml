@@ -1,8 +1,8 @@
 # Configuration file for rated-cli.
 
 rated:
-  apiEndpoint: https://api.rated.network/
-  beaconEndpoint: http://localhost:5054/
+  apiEndpoint: https://api.rated.network
+  beaconEndpoint: http://localhost:5052
   watcher:
     refreshRateInSeconds: 600
     validationKeys:
