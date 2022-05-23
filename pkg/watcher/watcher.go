@@ -14,7 +14,7 @@ type Watcher struct {
 	cfg     *core.Config            // Main configuration of rated CLI
 	keys    []EthereumValidationKey // List of keys we monitor
 	reg     prometheus.Registerer   // Registerer of Prometheus metrics
-	metrics WatcherMetrics          // Prometheus metrics for a validation key
+	metrics *WatcherMetrics          // Prometheus metrics for a validation key
 }
 
 // Representation of an Ethereum key and its associated statistics.
@@ -69,9 +69,13 @@ func NewWatcher(cfg *core.Config, reg prometheus.Registerer) (*Watcher, error) {
 		})
 	}
 
+	metrics := NewWatcherMetrics(reg)
+
 	return &Watcher{
-		cfg:  cfg,
-		keys: keys,
+		cfg:     cfg,
+		keys:    keys,
+		reg:     reg,
+		metrics: metrics,
 	}, nil
 }
 
@@ -102,6 +106,12 @@ func (w *Watcher) Watch() error {
 				}).Warn("unable to fetch statistics about key, skipped")
 				continue
 			}
+
+			w.metrics.ratedValidationUptime.WithLabelValues(key.publicKey).Set(stats.Uptime)
+			w.metrics.ratedValidationAvgCorrectness.WithLabelValues(key.publicKey).Set(stats.AvgCorrectness)
+			w.metrics.ratedValidationAttesterEffectiveness.WithLabelValues(key.publicKey).Set(stats.AttesterEffectiveness)
+			w.metrics.ratedValidationProposerEffectiveness.WithLabelValues(key.publicKey).Set(stats.ProposerEffectiveness)
+			w.metrics.ratedValidationValidatorEffectiveness.WithLabelValues(key.publicKey).Set(stats.ValidatorEffectiveness)
 
 			log.WithFields(log.Fields{
 				"validation-key":          key.publicKey,
