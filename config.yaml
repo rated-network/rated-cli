@@ -3,6 +3,7 @@
 rated:
   apiEndpoint: https://api.rated.network
   beaconEndpoint: http://localhost:5052
+  listenOn: http://localhost:8080
   watcher:
     refreshRateInSeconds: 7200
     validationKeys:
