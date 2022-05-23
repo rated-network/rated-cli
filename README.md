@@ -1,3 +1,65 @@
 # Rated CLI
 
 A tool to interact with the [Rated Network API](https://api.rated.network/docs).
+
+```
+Beacon Chain validator ratings from the command line.
+
+Usage:
+  rated-cli [command]
+
+Available Commands:
+  completion  Generate the autocompletion script for the specified shell
+  help        Help about any command
+  watch       Watch performances of Ethereum validator keys
+
+Flags:
+      --config string   config file (default is $HOME/.rated-cli.yaml)
+  -h, --help            help for rated-cli
+
+Use "rated-cli [command] --help" for more information about a command.
+```
+
+## Configuration 
+
+Example of a configuration file:
+
+```
+rated:
+  # Endpoint to the Rated Network API
+  apiEndpoint: https://api.rated.network
+
+  # Endpoint to an Ethereum beacon node
+  beaconEndpoint: http://localhost:5052
+
+  # Interface to listen on to expose Prometheus metrics and health probes handlers
+  listenOn: :8080
+  
+  # Configuration of the watcher service
+  watcher:
+
+    # Rate at which the statistics of a validator key are refreshed
+    refreshRateInSeconds: 7200
+
+    # List of validation keys to monitor
+    validationKeys:
+    - a26c2959d31d3f143eedd9f7377e33d842be77dffadaa4b12f8be2ccee725e797b2d7e93d5c55dbc1cb35177181401f4
+    - a4a962fa6a13b57cb04c24821abc04dc219d4f3ffc65308bb483792e12402a983d68eb304a3af87e95ea9f9d8163ef46
+    - a8e15d4cd973953be4f33d1107c571023a2f6330892eb087e36dd8c9386e2035d28e4d7fb57959df4862fce75908d12d
+```
+
+## Building & Running
+
+```
+make
+bin/rated-cli --config config.yaml watch
+```
+
+## Features
+
+### Watcher
+
+The watcher watches a list of validation keys and exposes their metrics to an
+endpoint to be polled by Prometheus. This allows to implement blackbox
+monitoring on an Ethereum Validation infrastructure without relying on internal
+signals, independant of the Ethereum clients used.
