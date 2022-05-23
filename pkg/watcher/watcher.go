@@ -4,14 +4,17 @@ import (
 	"strings"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
 	"github.com/skillz-blockchain/rated-cli/pkg/core"
 )
 
 // Watcher watches a list of validation keys periodically.
 type Watcher struct {
-	cfg  *core.Config            // Main configuration of rated CLI
-	keys []EthereumValidationKey // List of keys we monitor
+	cfg     *core.Config            // Main configuration of rated CLI
+	keys    []EthereumValidationKey // List of keys we monitor
+	reg     prometheus.Registerer   // Registerer of Prometheus metrics
+	metrics WatcherMetrics          // Prometheus metrics for a validation key
 }
 
 // Representation of an Ethereum key and its associated statistics.
@@ -35,7 +38,7 @@ func cleanupValidationKey(key string) string {
 }
 
 // NewWatcher creates a new watcher for validation keys.
-func NewWatcher(cfg *core.Config) (*Watcher, error) {
+func NewWatcher(cfg *core.Config, reg prometheus.Registerer) (*Watcher, error) {
 	keys := []EthereumValidationKey{}
 
 	log.WithFields(log.Fields{

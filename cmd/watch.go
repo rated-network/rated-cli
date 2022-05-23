@@ -2,6 +2,7 @@ package cmd
 
 import (
 	log "github.com/sirupsen/logrus"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/skillz-blockchain/rated-cli/pkg/core"
 	"github.com/skillz-blockchain/rated-cli/pkg/watcher"
 	"github.com/spf13/cobra"
@@ -13,7 +14,7 @@ var watchCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		go core.ListenAndServe(&cfg)
 
-		w, err := watcher.NewWatcher(&cfg)
+		w, err := watcher.NewWatcher(&cfg, prometheus.DefaultRegisterer)
 		if err != nil {
 			log.WithError(err).Fatal("unable to initialize watcher")
 		}
