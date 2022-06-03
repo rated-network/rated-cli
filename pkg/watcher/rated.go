@@ -26,19 +26,21 @@ type getValidatorEffectivenessData struct {
 }
 
 // getValidationStatistics fetches data about a validator on rated network.
-func getValidationStatistics(cfg *core.Config, key *EthereumValidationKey) (*getValidatorEffectivenessData, error) {
-	url := fmt.Sprintf("%s/v0/eth/validators/%d/effectiveness?size=1", cfg.ApiEndpoint, key.index)
+func getValidationStatistics(cfg *core.Config, key string) (*getValidatorEffectivenessData, error) {
+	// Key here is already prefixed with '0x', this is required for rated
+	// network API (which also supports indexes).
+	url := fmt.Sprintf("%s/v0/eth/validators/%s/effectiveness?size=1", cfg.ApiEndpoint, key)
 
 	log.WithFields(log.Fields{
 		"url":            url,
-		"validation-key": key.publicKey,
+		"validation-key": key,
 	}).Info("fetching rated data for validation key")
 
 	res, err := http.Get(url)
 	if err != nil {
 		log.WithError(err).WithFields(log.Fields{
 			"url":            url,
-			"validation-key": key.publicKey,
+			"validation-key": key,
 		}).Warn("unable to fetch data about validation key from rated network")
 
 		return nil, err
@@ -47,7 +49,7 @@ func getValidationStatistics(cfg *core.Config, key *EthereumValidationKey) (*get
 
 	log.WithFields(log.Fields{
 		"url":            url,
-		"validation-key": key.publicKey,
+		"validation-key": key,
 	}).Info("reading response from rated  network")
 
 	if res.StatusCode != 200 {
@@ -63,7 +65,7 @@ func getValidationStatistics(cfg *core.Config, key *EthereumValidationKey) (*get
 	if err != nil {
 		log.WithError(err).WithFields(log.Fields{
 			"url":            url,
-			"validation-key": key.publicKey,
+			"validation-key": key,
 		}).Warn("unable to read rated network http body")
 
 		return nil, err
@@ -71,7 +73,7 @@ func getValidationStatistics(cfg *core.Config, key *EthereumValidationKey) (*get
 
 	log.WithFields(log.Fields{
 		"url":            url,
-		"validation-key": key.publicKey,
+		"validation-key": key,
 	}).Info("parsing response from rated network")
 
 	var response getValidationEffectiveness
@@ -79,7 +81,7 @@ func getValidationStatistics(cfg *core.Config, key *EthereumValidationKey) (*get
 	if err != nil {
 		log.WithError(err).WithFields(log.Fields{
 			"url":            url,
-			"validation-key": key.publicKey,
+			"validation-key": key,
 		}).Warn("unable to parse rated network http body into expected response")
 
 		return nil, err
@@ -89,7 +91,7 @@ func getValidationStatistics(cfg *core.Config, key *EthereumValidationKey) (*get
 		log.WithFields(log.Fields{
 			"url":            url,
 			"status-code":    res.StatusCode,
-			"validation-key": key.publicKey,
+			"validation-key": key,
 			"nb-entries":     len(response.Data),
 		}).Warn("expected 1 entry of statistics for the validation key")
 
@@ -98,7 +100,7 @@ func getValidationStatistics(cfg *core.Config, key *EthereumValidationKey) (*get
 
 	log.WithFields(log.Fields{
 		"url":            url,
-		"validation-key": key.publicKey,
+		"validation-key": key,
 	}).Info("fetched validator statistics about key from rated network")
 
 	return &response.Data[0], nil

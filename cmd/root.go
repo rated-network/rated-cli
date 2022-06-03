@@ -53,7 +53,6 @@ func initConfig() {
 	}
 
 	cfg.ApiEndpoint = viper.GetString("rated.apiEndpoint")
-	cfg.BeaconEndpoint = viper.GetString("rated.beaconEndpoint")
 	cfg.WatcherValidationKeys = viper.GetStringSlice("rated.watcher.validationKeys")
 	cfg.WatcherRefreshRate = time.Second * time.Duration(viper.GetInt64("rated.watcher.refreshRateInSeconds"))
 	cfg.ListenOn = viper.GetString("rated.listenOn")

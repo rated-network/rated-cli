@@ -11,16 +11,10 @@ import (
 
 // Watcher watches a list of validation keys periodically.
 type Watcher struct {
-	cfg     *core.Config            // Main configuration of rated CLI
-	keys    []EthereumValidationKey // List of keys we monitor
-	reg     prometheus.Registerer   // Registerer of Prometheus metrics
-	metrics *WatcherMetrics          // Prometheus metrics for a validation key
-}
-
-// Representation of an Ethereum key and its associated statistics.
-type EthereumValidationKey struct {
-	publicKey string // validation key in the "0x..." format
-	index     int    // index of the validation key on the blockchain
+	cfg     *core.Config          // Main configuration of rated CLI
+	keys    []string              // List of keys we monitor
+	reg     prometheus.Registerer // Registerer of Prometheus metrics
+	metrics *WatcherMetrics       // Prometheus metrics for a validation key
 }
 
 // CleanupValidationKey sanitizies the given validation key.
@@ -39,41 +33,17 @@ func cleanupValidationKey(key string) string {
 
 // NewWatcher creates a new watcher for validation keys.
 func NewWatcher(cfg *core.Config, reg prometheus.Registerer) (*Watcher, error) {
-	keys := []EthereumValidationKey{}
-
 	log.WithFields(log.Fields{
-		"beacon-api-endpoint": cfg.BeaconEndpoint,
-		"rated-api-endpoint":  cfg.ApiEndpoint,
-		"keys-to-watch":       len(cfg.WatcherValidationKeys),
-		"refresh-rate":        cfg.WatcherRefreshRate,
+		"rated-api-endpoint": cfg.ApiEndpoint,
+		"keys-to-watch":      len(cfg.WatcherValidationKeys),
+		"refresh-rate":       cfg.WatcherRefreshRate,
 	}).Info("created watcher")
-
-	// Here we convert the validation keys into indexes, as this is what is
-	// supported by the Rated Network API.
-	for _, key := range cfg.WatcherValidationKeys {
-		key = cleanupValidationKey(key)
-
-		index, err := getValidationIndex(cfg, key)
-		if err != nil {
-			continue
-		}
-
-		log.WithFields(log.Fields{
-			"validation-key":   key,
-			"validation-index": index,
-		}).Info("fetched validation key for the given index")
-
-		keys = append(keys, EthereumValidationKey{
-			publicKey: key,
-			index:     index,
-		})
-	}
 
 	metrics := NewWatcherMetrics(reg)
 
 	return &Watcher{
 		cfg:     cfg,
-		keys:    keys,
+		keys:    cfg.WatcherValidationKeys,
 		reg:     reg,
 		metrics: metrics,
 	}, nil
@@ -94,28 +64,25 @@ func (w *Watcher) Watch() error {
 
 		for _, key := range w.keys {
 			log.WithFields(log.Fields{
-				"validation-key":       key.publicKey,
-				"validation-key-index": key.index,
+				"validation-key": key,
 			}).Info("fetching statistics about key")
 
-			stats, err := getValidationStatistics(w.cfg, &key)
+			stats, err := getValidationStatistics(w.cfg, key)
 			if err != nil {
 				log.WithError(err).WithFields(log.Fields{
-					"validation-key":       key.publicKey,
-					"validation-key-index": key.index,
+					"validation-key": key,
 				}).Warn("unable to fetch statistics about key, skipped")
 				continue
 			}
 
-			w.metrics.ratedValidationUptime.WithLabelValues(key.publicKey).Set(stats.Uptime)
-			w.metrics.ratedValidationAvgCorrectness.WithLabelValues(key.publicKey).Set(stats.AvgCorrectness)
-			w.metrics.ratedValidationAttesterEffectiveness.WithLabelValues(key.publicKey).Set(stats.AttesterEffectiveness)
-			w.metrics.ratedValidationProposerEffectiveness.WithLabelValues(key.publicKey).Set(stats.ProposerEffectiveness)
-			w.metrics.ratedValidationValidatorEffectiveness.WithLabelValues(key.publicKey).Set(stats.ValidatorEffectiveness)
+			w.metrics.ratedValidationUptime.WithLabelValues(key).Set(stats.Uptime)
+			w.metrics.ratedValidationAvgCorrectness.WithLabelValues(key).Set(stats.AvgCorrectness)
+			w.metrics.ratedValidationAttesterEffectiveness.WithLabelValues(key).Set(stats.AttesterEffectiveness)
+			w.metrics.ratedValidationProposerEffectiveness.WithLabelValues(key).Set(stats.ProposerEffectiveness)
+			w.metrics.ratedValidationValidatorEffectiveness.WithLabelValues(key).Set(stats.ValidatorEffectiveness)
 
 			log.WithFields(log.Fields{
-				"validation-key":          key.publicKey,
-				"validation-key-index":    key.index,
+				"validation-key":          key,
 				"uptime":                  stats.Uptime,
 				"avg-correctness":         stats.AvgCorrectness,
 				"attester-effectiveness":  stats.AttesterEffectiveness,
