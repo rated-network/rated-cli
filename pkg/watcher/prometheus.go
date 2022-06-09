@@ -1,13 +1,14 @@
 package watcher
 
 import (
-	log "github.com/sirupsen/logrus"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
+	log "github.com/sirupsen/logrus"
 )
 
 // Prometheus metrics exposed by the watcher.
 type WatcherMetrics struct {
+	ratedMonitoredKeys                    prometheus.Gauge
 	ratedValidationUptime                 *prometheus.GaugeVec
 	ratedValidationAvgCorrectness         *prometheus.GaugeVec
 	ratedValidationAttesterEffectiveness  *prometheus.GaugeVec
@@ -18,6 +19,13 @@ type WatcherMetrics struct {
 // NewWatcherMetrics creates prometheus metrics for the watcher.
 func NewWatcherMetrics(reg prometheus.Registerer) *WatcherMetrics {
 	log.Info("creating Prometheus metrics for watcher")
+
+	monitored := promauto.With(reg).NewGauge(prometheus.GaugeOpts{
+		Namespace: "rated",
+		Subsystem: "sentinel",
+		Name:      "monitored_keys",
+		Help:      "Number of validation keys watched.",
+	})
 
 	uptime := promauto.With(reg).NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: "rated",
@@ -55,6 +63,7 @@ func NewWatcherMetrics(reg prometheus.Registerer) *WatcherMetrics {
 	}, []string{"pubkey"})
 
 	return &WatcherMetrics{
+		ratedMonitoredKeys:                    monitored,
 		ratedValidationUptime:                 uptime,
 		ratedValidationAvgCorrectness:         correctness,
 		ratedValidationAttesterEffectiveness:  attester,

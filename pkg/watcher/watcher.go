@@ -62,6 +62,8 @@ func (w *Watcher) Watch() error {
 			"validation-keys": len(w.keys),
 		}).Info("starting new iteration")
 
+		w.metrics.ratedMonitoredKeys.Set(float64(len(w.keys)))
+
 		for _, key := range w.keys {
 			log.WithFields(log.Fields{
 				"validation-key": key,
