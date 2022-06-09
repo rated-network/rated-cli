@@ -29,9 +29,6 @@ rated:
   # Endpoint to the Rated Network API
   apiEndpoint: https://api.rated.network
 
-  # Endpoint to an Ethereum beacon node
-  beaconEndpoint: http://localhost:5052
-
   # Interface to listen on to expose Prometheus metrics and health probes handlers
   listenOn: :8080
   
@@ -56,6 +53,18 @@ bin/rated-cli --config config.yaml watch
 ```
 
 ## Features
+
+### Grafana
+
+If you are running it in an environment with Prometheus & Grafana, you can
+install the ready-to-use dashboard in Grafana by:
+
+- clicking on the `+` icon on the left menu and selecting `Import`,
+- pasting the [JSON](grafana/dashboard.json) and clicking the `Load` button.
+
+You will end up with a similar-looking dashboard:
+
+![](grafana/rated-dashboard.png)
 
 ### Watcher
 
