@@ -68,9 +68,8 @@ func getValidationStatistics(cfg *core.Config, key string) (*getValidatorEffecti
 			}).Error("Unable to fetch validator data due to internal server error. Aborting")
 
 			return nil, fmt.Errorf("Internal server error received from rated network")
-		}
 
-		if res.StatusCode == 404 {
+		} else if res.StatusCode == 404 {
 			log.WithFields(log.Fields{
 				"url":            url,
 				"status-code":    res.StatusCode,
@@ -78,9 +77,8 @@ func getValidationStatistics(cfg *core.Config, key string) (*getValidatorEffecti
 			}).Warn("Validator not found")
 
 			return nil, fmt.Errorf("Validator not found")
-		}
 
-		if res.StatusCode == 200 {
+		} else if res.StatusCode == 200 {
 			body, err := io.ReadAll(res.Body)
 			if err != nil {
 				log.WithError(err).WithFields(log.Fields{
@@ -123,12 +121,9 @@ func getValidationStatistics(cfg *core.Config, key string) (*getValidatorEffecti
 				}).Info("Successfully fetched statistics for validator")
 
 				return &response.Data[0], nil
-
 			}
 
-		}
-
-		if res.StatusCode == 429 {
+		} else if res.StatusCode == 429 {
 			min := 0.95
 			max := 1.05
 			sleepFor := math.Pow(2, float64(r)) * ((rand.Float64() * (max - min)) + min)
@@ -140,8 +135,16 @@ func getValidationStatistics(cfg *core.Config, key string) (*getValidatorEffecti
 
 			time.Sleep(time.Duration(sleepFor) * time.Second)
 
-		}
+		} else {
 
+			log.WithFields(log.Fields{
+				"url":            url,
+				"status-code":    res.StatusCode,
+				"validation-key": key,
+			}).Warn("Unknown status code received. Aborting")
+
+			return nil, fmt.Errorf("Unknown status code received from rated network")
+		}
 	}
 
 	return nil, fmt.Errorf(fmt.Sprintf("Failed to fetch Validator data after %v attempts", maxRetries))
