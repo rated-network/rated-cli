@@ -36,7 +36,8 @@ rated:
   watcher:
 
     # Rate at which the statistics of a validator key are refreshed
-    refreshRateInSeconds: 7200
+    # Note: Rated currently refreshes data daily.
+    refreshRateInSeconds: 86400
 
     # List of validation keys to monitor
     validationKeys:

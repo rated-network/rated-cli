@@ -1,7 +1,6 @@
 package watcher
 
 import (
-	"strings"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -15,20 +14,6 @@ type Watcher struct {
 	keys    []string              // List of keys we monitor
 	reg     prometheus.Registerer // Registerer of Prometheus metrics
 	metrics *WatcherMetrics       // Prometheus metrics for a validation key
-}
-
-// CleanupValidationKey sanitizies the given validation key.
-func cleanupValidationKey(key string) string {
-	var prefix string
-
-	if len(key) == 96 && !strings.HasPrefix(key, "0x") {
-		log.WithFields(log.Fields{
-			"key": key,
-		}).Info("adding '0x' prefix to validation key")
-		prefix = "0x"
-	}
-
-	return prefix + key
 }
 
 // NewWatcher creates a new watcher for validation keys.
@@ -100,6 +85,4 @@ func (w *Watcher) Watch() error {
 		time.Sleep(sleepFor)
 		log.Info("end of iteration")
 	}
-
-	return nil
 }

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"math/rand"
 	"os"
 	"time"
 
@@ -28,8 +29,8 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize(initConfig)
-
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.rated-cli.yaml)")
+	rand.Seed(time.Now().UTC().UnixNano())
 }
 
 func initConfig() {
