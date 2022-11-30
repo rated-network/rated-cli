@@ -39,13 +39,28 @@ func getValidationStatistics(cfg *core.Config, key string) (*getValidatorEffecti
 
 	maxRetries := 10
 
+	client := new(http.Client)
+
 	for r := 0; r <= maxRetries; r++ {
 
-		res, err := http.Get(url)
+		req, err := http.NewRequest("GET", url, nil)
+		if err != nil {
+			log.WithError(err).WithFields(log.Fields{
+				"url":            url,
+				"validation-key": key,
+			}).Warn("Unable to create http request. Aborting")
+
+			// Abort on unknown error
+			return nil, err
+		}
+
+		req.Header.Add("X-Rated-Network", cfg.Network)
+		res, err := client.Do(req)
 
 		if err != nil {
 			log.WithError(err).WithFields(log.Fields{
 				"url":            url,
+				"network":        cfg.Network,
 				"validation-key": key,
 			}).Warn("Unable to fetch validator data. Aborting")
 
@@ -57,12 +72,14 @@ func getValidationStatistics(cfg *core.Config, key string) (*getValidatorEffecti
 
 		log.WithFields(log.Fields{
 			"url":            url,
+			"network":        cfg.Network,
 			"validation-key": key,
 		}).Info("Reading response from rated network")
 
 		if res.StatusCode == 500 {
 			log.WithFields(log.Fields{
 				"url":           url,
+				"network":       cfg.Network,
 				"status-code":   res.StatusCode,
 				"validator-key": key,
 			}).Error("Unable to fetch validator data due to internal server error. Aborting")
@@ -72,6 +89,7 @@ func getValidationStatistics(cfg *core.Config, key string) (*getValidatorEffecti
 		} else if res.StatusCode == 404 {
 			log.WithFields(log.Fields{
 				"url":            url,
+				"network":        cfg.Network,
 				"status-code":    res.StatusCode,
 				"validation-key": key,
 			}).Warn("Validator not found")
@@ -83,6 +101,7 @@ func getValidationStatistics(cfg *core.Config, key string) (*getValidatorEffecti
 			if err != nil {
 				log.WithError(err).WithFields(log.Fields{
 					"url":            url,
+					"network":        cfg.Network,
 					"validation-key": key,
 				}).Warn("Unable to read rated network http body")
 
@@ -91,6 +110,7 @@ func getValidationStatistics(cfg *core.Config, key string) (*getValidatorEffecti
 
 			log.WithFields(log.Fields{
 				"url":            url,
+				"network":        cfg.Network,
 				"validation-key": key,
 			}).Info("Parsing response from rated network")
 
@@ -99,6 +119,7 @@ func getValidationStatistics(cfg *core.Config, key string) (*getValidatorEffecti
 			if err != nil {
 				log.WithError(err).WithFields(log.Fields{
 					"url":            url,
+					"network":        cfg.Network,
 					"validation-key": key,
 				}).Warn("Unable to parse rated network http body into expected response")
 
@@ -108,6 +129,7 @@ func getValidationStatistics(cfg *core.Config, key string) (*getValidatorEffecti
 			if len(response.Data) != 1 {
 				log.WithFields(log.Fields{
 					"url":            url,
+					"network":        cfg.Network,
 					"status-code":    res.StatusCode,
 					"validation-key": key,
 					"nb-entries":     len(response.Data),
@@ -117,6 +139,7 @@ func getValidationStatistics(cfg *core.Config, key string) (*getValidatorEffecti
 			} else {
 				log.WithFields(log.Fields{
 					"url":            url,
+					"network":        cfg.Network,
 					"validation-key": key,
 				}).Info("Successfully fetched statistics for validator")
 
@@ -130,6 +153,7 @@ func getValidationStatistics(cfg *core.Config, key string) (*getValidatorEffecti
 
 			log.WithFields(log.Fields{
 				"url":         url,
+				"network":     cfg.Network,
 				"status-code": res.StatusCode,
 			}).Warn(fmt.Sprintf("Rate limit exceeded. Retrying in %v seconds.", sleepFor))
 
@@ -139,6 +163,7 @@ func getValidationStatistics(cfg *core.Config, key string) (*getValidatorEffecti
 
 			log.WithFields(log.Fields{
 				"url":            url,
+				"network":        cfg.Network,
 				"status-code":    res.StatusCode,
 				"validation-key": key,
 			}).Warn("Unknown status code received. Aborting")
