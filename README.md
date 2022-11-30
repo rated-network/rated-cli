@@ -29,6 +29,9 @@ rated:
   # Endpoint to the Rated Network API
   apiEndpoint: https://api.rated.network
 
+  # Optional: network to query, currently supports mainnet and prater
+  network: mainnet
+
   # Interface to listen on to expose Prometheus metrics and health probes handlers
   listenOn: :8080
   
