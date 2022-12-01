@@ -54,6 +54,13 @@ func initConfig() {
 	}
 
 	cfg.ApiEndpoint = viper.GetString("rated.apiEndpoint")
+
+	if viper.InConfig("rated.network") {
+		cfg.Network = viper.GetString("rated.network")
+	} else {
+		cfg.Network = "mainnet"
+	}
+
 	cfg.WatcherValidationKeys = viper.GetStringSlice("rated.watcher.validationKeys")
 	cfg.WatcherRefreshRate = time.Second * time.Duration(viper.GetInt64("rated.watcher.refreshRateInSeconds"))
 	cfg.ListenOn = viper.GetString("rated.listenOn")
