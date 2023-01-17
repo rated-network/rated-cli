@@ -2,6 +2,7 @@
 
 rated:
   apiEndpoint: https://api.rated.network
+  apiAccessToken: access-token-here
   listenOn: :8080
   watcher:
     refreshRateInSeconds: 86400

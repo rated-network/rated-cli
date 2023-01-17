@@ -54,6 +54,7 @@ func initConfig() {
 	}
 
 	cfg.ApiEndpoint = viper.GetString("rated.apiEndpoint")
+	cfg.ApiAccessToken = viper.GetString("rated.apiAccessToken")
 
 	if viper.InConfig("rated.network") {
 		cfg.Network = viper.GetString("rated.network")
