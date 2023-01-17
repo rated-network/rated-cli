@@ -29,6 +29,9 @@ rated:
   # Endpoint to the Rated Network API
   apiEndpoint: https://api.rated.network
 
+  # JWT Access token to the Rated Network API
+  accessToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+
   # Optional: network to query, currently supports mainnet and prater
   network: mainnet
 

@@ -28,6 +28,10 @@ type getValidatorEffectivenessData struct {
 	ValidatorEffectiveness float64 `json:"validatorEffectiveness"`
 }
 
+type authenticationError struct {
+	Detail    string `json:"detail"`
+}
+
 func getValidationStatistics(cfg *core.Config, key string) (*getValidatorEffectivenessData, error) {
 
 	url := fmt.Sprintf("%s/v0/eth/validators/%s/effectiveness?size=1", cfg.ApiEndpoint, key)
@@ -40,6 +44,7 @@ func getValidationStatistics(cfg *core.Config, key string) (*getValidatorEffecti
 	maxRetries := 10
 
 	client := new(http.Client)
+	bearerToken := fmt.Sprintf("Bearer %s", cfg.ApiAccessToken)
 
 	for r := 0; r <= maxRetries; r++ {
 
@@ -55,6 +60,7 @@ func getValidationStatistics(cfg *core.Config, key string) (*getValidatorEffecti
 		}
 
 		req.Header.Add("X-Rated-Network", cfg.Network)
+		req.Header.Add("Authorization", bearerToken)
 		res, err := client.Do(req)
 
 		if err != nil {
@@ -95,6 +101,32 @@ func getValidationStatistics(cfg *core.Config, key string) (*getValidatorEffecti
 			}).Warn("Validator not found")
 
 			return nil, fmt.Errorf("Validator not found")
+
+		} else if res.StatusCode == 401 {
+			body, err := io.ReadAll(res.Body)
+			if err != nil {
+				log.WithError(err).WithFields(log.Fields{
+					"url":            url,
+					"network":        cfg.Network,
+					"validation-key": key,
+				}).Warn("Unable to read rated network http body")
+
+				return nil, err
+			}
+
+			var response authenticationError
+			err = json.Unmarshal(body, &response)
+			if err != nil {
+				log.WithError(err).WithFields(log.Fields{
+					"url":            url,
+					"network":        cfg.Network,
+					"validation-key": key,
+				}).Warn("Unable to read rated network http body")
+
+				return nil, err
+			}
+
+			return nil, fmt.Errorf("Authentication failure: %q.", response.Detail)
 
 		} else if res.StatusCode == 200 {
 			body, err := io.ReadAll(res.Body)
