@@ -8,4 +8,4 @@ COPY . .
 
 RUN make
 
-CMD ["bin/rated-cli", "-f", "config.yaml"]
+CMD ["bin/rated-cli", "--config", "config.yaml", "watch"]
