@@ -40,10 +40,10 @@ rated:
   
   # Configuration of the watcher service
   watcher:
-
-    # Rate at which the statistics of a validator key are refreshed
-    # Note: Rated currently refreshes data daily.
-    refreshRateInSeconds: 86400
+    # Can be `day` or `hour`
+    # Note: Days run on 24h intervals (225 epochs) from genesis. This means noon UTC to noon UTC the following day.
+    # Note: "hours" are 57.6 minute intervals (9 epochs). A day contains exactly 25 such intervals.
+    granularity: hour
 
     # List of validation keys to monitor
     validationKeys:

@@ -26,19 +26,22 @@ type getValidatorEffectivenessData struct {
 	AttesterEffectiveness  float64 `json:"attesterEffectiveness"`
 	ProposerEffectiveness  float64 `json:"proposerEffectiveness"`
 	ValidatorEffectiveness float64 `json:"validatorEffectiveness"`
+	InclusionDelay         float64 `json:"avgInclusionDelay"`
+	Rewards                float64 `json:"sumAllRewards"`
 }
 
 type authenticationError struct {
-	Detail    string `json:"detail"`
+	Detail string `json:"detail"`
 }
 
-func getValidationStatistics(cfg *core.Config, key string) (*getValidatorEffectivenessData, error) {
+func getValidationStatistics(cfg *core.Config, key string, granularity string) (*getValidatorEffectivenessData, error) {
 
-	url := fmt.Sprintf("%s/v0/eth/validators/%s/effectiveness?size=1", cfg.ApiEndpoint, key)
+	url := fmt.Sprintf("%s/v0/eth/validators/%s/effectiveness?size=1&granularity=%s", cfg.ApiEndpoint, key, granularity)
 
 	log.WithFields(log.Fields{
 		"url":            url,
 		"validation-key": key,
+		"granularity":    granularity,
 	}).Info("Fetching rated data for validation key")
 
 	maxRetries := 10

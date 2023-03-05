@@ -63,7 +63,7 @@ func initConfig() {
 	}
 
 	cfg.WatcherValidationKeys = viper.GetStringSlice("rated.watcher.validationKeys")
-	cfg.WatcherRefreshRate = time.Second * time.Duration(viper.GetInt64("rated.watcher.refreshRateInSeconds"))
+	cfg.Granularity = viper.GetString("rated.watcher.granularity")
 	cfg.ListenOn = viper.GetString("rated.listenOn")
 
 	log.WithFields(log.Fields{

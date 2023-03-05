@@ -21,7 +21,7 @@ func NewWatcher(cfg *core.Config, reg prometheus.Registerer) (*Watcher, error) {
 	log.WithFields(log.Fields{
 		"rated-api-endpoint": cfg.ApiEndpoint,
 		"keys-to-watch":      len(cfg.WatcherValidationKeys),
-		"refresh-rate":       cfg.WatcherRefreshRate,
+		"granularity":        cfg.Granularity,
 	}).Info("created watcher")
 
 	metrics := NewWatcherMetrics(reg)
@@ -40,7 +40,12 @@ func (w *Watcher) Watch() error {
 
 	for {
 		startAt := time.Now()
-		nextAt := startAt.Add(time.Duration(w.cfg.WatcherRefreshRate))
+		granularity := w.cfg.Granularity
+		sleepDuration := time.Duration(86400)
+		if granularity == "hour" {
+			sleepDuration = time.Duration(3600)
+		}
+		nextAt := startAt.Add(sleepDuration)
 		log.WithFields(log.Fields{
 			"start-at":        startAt,
 			"next-at":         nextAt,
@@ -54,7 +59,7 @@ func (w *Watcher) Watch() error {
 				"validation-key": key,
 			}).Info("fetching statistics about key")
 
-			stats, err := getValidationStatistics(w.cfg, key)
+			stats, err := getValidationStatistics(w.cfg, key, granularity)
 			if err != nil {
 				log.WithError(err).WithFields(log.Fields{
 					"validation-key": key,
@@ -67,6 +72,8 @@ func (w *Watcher) Watch() error {
 			w.metrics.ratedValidationAttesterEffectiveness.WithLabelValues(key).Set(stats.AttesterEffectiveness)
 			w.metrics.ratedValidationProposerEffectiveness.WithLabelValues(key).Set(stats.ProposerEffectiveness)
 			w.metrics.ratedValidationValidatorEffectiveness.WithLabelValues(key).Set(stats.ValidatorEffectiveness)
+			w.metrics.ratedValidationRewards.WithLabelValues(key).Set(stats.Rewards)
+			w.metrics.ratedValidationInclusionDelay.WithLabelValues(key).Set(stats.InclusionDelay)
 
 			log.WithFields(log.Fields{
 				"validation-key":          key,
@@ -75,6 +82,8 @@ func (w *Watcher) Watch() error {
 				"attester-effectiveness":  stats.AttesterEffectiveness,
 				"proposer-effectiveness":  stats.ProposerEffectiveness,
 				"validator-effectiveness": stats.ValidatorEffectiveness,
+				"rewards":                 stats.Rewards,
+				"inclusion-delay":         stats.InclusionDelay,
 			}).Info("fetched statistics about key from rated network")
 		}
 
