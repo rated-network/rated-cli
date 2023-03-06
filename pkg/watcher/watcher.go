@@ -40,12 +40,8 @@ func (w *Watcher) Watch() error {
 
 	for {
 		startAt := time.Now()
-		granularity := w.cfg.Granularity
-		sleepDuration := time.Duration(86400)
-		if granularity == "hour" {
-			sleepDuration = time.Duration(3600)
-		}
-		nextAt := startAt.Add(sleepDuration)
+		granularity := w.cfg.Window()
+		nextAt := startAt.Add(w.cfg.SleepDuration())
 		log.WithFields(log.Fields{
 			"start-at":        startAt,
 			"next-at":         nextAt,

@@ -2,8 +2,9 @@
 
 rated:
   apiEndpoint: https://api.rated.network
-  apiAccessToken: access-token-here
+  apiAccessToken: sometoken
   listenOn: :8080
+  network: mainnet
   watcher:
     granularity: hour
     validationKeys:
