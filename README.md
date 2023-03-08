@@ -30,20 +30,21 @@ rated:
   apiEndpoint: https://api.rated.network
 
   # JWT Access token to the Rated Network API
-  accessToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+  accessToken: sometoken
 
   # Optional: network to query, currently supports mainnet and prater
-  network: mainnet
+  network: mainnet {'mainnet', 'prater'}
 
   # Interface to listen on to expose Prometheus metrics and health probes handlers
   listenOn: :8080
   
   # Configuration of the watcher service
   watcher:
-
-    # Rate at which the statistics of a validator key are refreshed
-    # Note: Rated currently refreshes data daily.
-    refreshRateInSeconds: 86400
+    # Can be `day` or `hour` {'day', 'hour'}
+    # Note: Days run on 24h intervals (225 epochs) from genesis. This means noon UTC to noon UTC the following day.
+    # Note: "hours" are 57.6 minute intervals (9 epochs). A day contains exactly 25 such intervals.
+    # Note: Prater will default to 'day'
+    granularity: hour
 
     # List of validation keys to monitor
     validationKeys:
