@@ -13,19 +13,13 @@ type Config struct {
 }
 
 func (c *Config) SleepDuration() time.Duration {
-	// Prater granularity defaults to 1 day
-	if c.Network == "mainnet" && c.Granularity == "hour" {
+	if c.Granularity == "hour" {
 		return time.Hour
 	} else {
 		return 24 * time.Hour
 	}
 }
 
-func (c* Config) Window() string {
-	// Prater granularity defaults to 1 day
-	if c.Network == "mainnet" {
-		return c.Granularity
-	} else {
-		return "day"
-	}
+func (c *Config) Window() string {
+	return c.Granularity
 }
