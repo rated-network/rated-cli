@@ -11,7 +11,7 @@ import (
 // Watcher watches a list of validation keys periodically.
 type Watcher struct {
 	cfg     *core.Config          // Main configuration of rated CLI
-	keys    []string              // List of keys we monitor
+	keys    map[string][]string   // List of keys we monitor
 	reg     prometheus.Registerer // Registerer of Prometheus metrics
 	metrics *WatcherMetrics       // Prometheus metrics for a validation key
 }
@@ -20,7 +20,7 @@ type Watcher struct {
 func NewWatcher(cfg *core.Config, reg prometheus.Registerer) (*Watcher, error) {
 	log.WithFields(log.Fields{
 		"rated-api-endpoint": cfg.ApiEndpoint,
-		"keys-to-watch":      len(cfg.WatcherValidationKeys),
+		"keys-to-watch":      countValidationKeys(cfg.WatcherValidationKeys),
 		"granularity":        cfg.Granularity,
 	}).Info("created watcher")
 
@@ -45,42 +45,48 @@ func (w *Watcher) Watch() error {
 		log.WithFields(log.Fields{
 			"start-at":        startAt,
 			"next-at":         nextAt,
-			"validation-keys": len(w.keys),
+			"validation-keys": countValidationKeys(w.cfg.WatcherValidationKeys),
 		}).Info("starting new iteration")
 
-		w.metrics.ratedMonitoredKeys.Set(float64(len(w.keys)))
+		w.metrics.ratedMonitoredKeys.Set(float64(countValidationKeys(w.cfg.WatcherValidationKeys)))
 
-		for _, key := range w.keys {
-			log.WithFields(log.Fields{
-				"validation-key": key,
-			}).Info("fetching statistics about key")
-
-			stats, err := getValidationStatistics(w.cfg, key, granularity)
-			if err != nil {
-				log.WithError(err).WithFields(log.Fields{
+		for label, keys := range w.cfg.WatcherValidationKeys {
+			for _, key := range keys {
+				log.WithFields(log.Fields{
+					"label":          label,
 					"validation-key": key,
-				}).Warn("unable to fetch statistics about key, skipped")
-				continue
+				}).Info("fetching statistics about key")
+
+				stats, err := getValidationStatistics(w.cfg, key, granularity)
+				if err != nil {
+					log.WithError(err).WithFields(log.Fields{
+						"label":          label,
+						"validation-key": key,
+					}).Warn("unable to fetch statistics about key, skipped")
+					continue
+				}
+
+				metricLabels := prometheus.Labels{"label": label, "pubkey": key}
+				w.metrics.ratedValidationUptime.With(metricLabels).Set(stats.Uptime)
+				w.metrics.ratedValidationAvgCorrectness.With(metricLabels).Set(stats.AvgCorrectness)
+				w.metrics.ratedValidationAttesterEffectiveness.With(metricLabels).Set(stats.AttesterEffectiveness)
+				w.metrics.ratedValidationProposerEffectiveness.With(metricLabels).Set(stats.ProposerEffectiveness)
+				w.metrics.ratedValidationValidatorEffectiveness.With(metricLabels).Set(stats.ValidatorEffectiveness)
+				w.metrics.ratedValidationRewards.With(metricLabels).Set(stats.Rewards)
+				w.metrics.ratedValidationInclusionDelay.With(metricLabels).Set(stats.InclusionDelay)
+
+				log.WithFields(log.Fields{
+					"label":                   label,
+					"validation-key":          key,
+					"uptime":                  stats.Uptime,
+					"avg-correctness":         stats.AvgCorrectness,
+					"attester-effectiveness":  stats.AttesterEffectiveness,
+					"proposer-effectiveness":  stats.ProposerEffectiveness,
+					"validator-effectiveness": stats.ValidatorEffectiveness,
+					"rewards":                 stats.Rewards,
+					"inclusion-delay":         stats.InclusionDelay,
+				}).Info("fetched statistics about key from rated network")
 			}
-
-			w.metrics.ratedValidationUptime.WithLabelValues(key).Set(stats.Uptime)
-			w.metrics.ratedValidationAvgCorrectness.WithLabelValues(key).Set(stats.AvgCorrectness)
-			w.metrics.ratedValidationAttesterEffectiveness.WithLabelValues(key).Set(stats.AttesterEffectiveness)
-			w.metrics.ratedValidationProposerEffectiveness.WithLabelValues(key).Set(stats.ProposerEffectiveness)
-			w.metrics.ratedValidationValidatorEffectiveness.WithLabelValues(key).Set(stats.ValidatorEffectiveness)
-			w.metrics.ratedValidationRewards.WithLabelValues(key).Set(stats.Rewards)
-			w.metrics.ratedValidationInclusionDelay.WithLabelValues(key).Set(stats.InclusionDelay)
-
-			log.WithFields(log.Fields{
-				"validation-key":          key,
-				"uptime":                  stats.Uptime,
-				"avg-correctness":         stats.AvgCorrectness,
-				"attester-effectiveness":  stats.AttesterEffectiveness,
-				"proposer-effectiveness":  stats.ProposerEffectiveness,
-				"validator-effectiveness": stats.ValidatorEffectiveness,
-				"rewards":                 stats.Rewards,
-				"inclusion-delay":         stats.InclusionDelay,
-			}).Info("fetched statistics about key from rated network")
 		}
 
 		sleepFor := time.Until(nextAt)
@@ -90,4 +96,13 @@ func (w *Watcher) Watch() error {
 		time.Sleep(sleepFor)
 		log.Info("end of iteration")
 	}
+}
+
+// countValidationKeys counts the total number of validation keys in the configuration.
+func countValidationKeys(validationKeys map[string][]string) int {
+	count := 0
+	for _, keys := range validationKeys {
+		count += len(keys)
+	}
+	return count
 }

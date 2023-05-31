@@ -62,7 +62,13 @@ func initConfig() {
 		cfg.Network = "mainnet"
 	}
 
-	cfg.WatcherValidationKeys = viper.GetStringSlice("rated.watcher.validationKeys")
+	validationKeys := viper.GetStringMapStringSlice("rated.watcher.validationKeys")
+	cfg.WatcherValidationKeys = make(map[string][]string)
+
+	for label, keys := range validationKeys {
+		cfg.WatcherValidationKeys[label] = keys
+	}
+
 	cfg.Granularity = viper.GetString("rated.watcher.granularity")
 	cfg.ListenOn = viper.GetString("rated.listenOn")
 
