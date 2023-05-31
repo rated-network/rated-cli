@@ -51,6 +51,13 @@ func (w *Watcher) Watch() error {
 		w.metrics.ratedMonitoredKeys.Set(float64(countValidationKeys(w.cfg.WatcherValidationKeys)))
 
 		for label, keys := range w.cfg.WatcherValidationKeys {
+			// Aggregate the number of validators per label
+			validatorCountByLabel := AggregateValidatorsByLabel(map[string][]string{label: keys})
+
+			// Update the monitored keys count metric per label
+			for label, count := range validatorCountByLabel {
+				w.metrics.ratedMonitoredByLabel.WithLabelValues(label).Set(float64(count))
+			}
 			for _, key := range keys {
 				log.WithFields(log.Fields{
 					"label":          label,
@@ -105,4 +112,15 @@ func countValidationKeys(validationKeys map[string][]string) int {
 		count += len(keys)
 	}
 	return count
+}
+
+// AggregateValidatorsByLabel aggregates the number of validators per label and returns a map with label and count.
+func AggregateValidatorsByLabel(validationKeys map[string][]string) map[string]int {
+	validatorCountByLabel := make(map[string]int)
+
+	for label, keys := range validationKeys {
+		validatorCountByLabel[label] = len(keys)
+	}
+
+	return validatorCountByLabel
 }

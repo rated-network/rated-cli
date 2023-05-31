@@ -9,6 +9,7 @@ import (
 // Prometheus metrics exposed by the watcher.
 type WatcherMetrics struct {
 	ratedMonitoredKeys                    prometheus.Gauge
+	ratedMonitoredByLabel                 *prometheus.GaugeVec
 	ratedValidationUptime                 *prometheus.GaugeVec
 	ratedValidationAvgCorrectness         *prometheus.GaugeVec
 	ratedValidationAttesterEffectiveness  *prometheus.GaugeVec
@@ -28,6 +29,13 @@ func NewWatcherMetrics(reg prometheus.Registerer) *WatcherMetrics {
 		Name:      "monitored_keys",
 		Help:      "Number of validation keys watched.",
 	})
+
+	monitoredByLabel := promauto.With(reg).NewGaugeVec(prometheus.GaugeOpts{
+		Namespace: "rated",
+		Subsystem: "sentinel",
+		Name:      "monitored_keys_per_label",
+		Help:      "Number of validation keys watched per label.",
+	}, []string{"label"})
 
 	uptime := promauto.With(reg).NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: "rated",
@@ -80,6 +88,7 @@ func NewWatcherMetrics(reg prometheus.Registerer) *WatcherMetrics {
 
 	return &WatcherMetrics{
 		ratedMonitoredKeys:                    monitored,
+		ratedMonitoredByLabel:                 monitoredByLabel,
 		ratedValidationUptime:                 uptime,
 		ratedValidationAvgCorrectness:         correctness,
 		ratedValidationAttesterEffectiveness:  attester,
