@@ -48,9 +48,10 @@ rated:
 
     # List of validation keys to monitor
     validationKeys:
-    - a26c2959d31d3f143eedd9f7377e33d842be77dffadaa4b12f8be2ccee725e797b2d7e93d5c55dbc1cb35177181401f4
-    - a4a962fa6a13b57cb04c24821abc04dc219d4f3ffc65308bb483792e12402a983d68eb304a3af87e95ea9f9d8163ef46
-    - a8e15d4cd973953be4f33d1107c571023a2f6330892eb087e36dd8c9386e2035d28e4d7fb57959df4862fce75908d12d
+      label1:
+        - a26c2959d31d3f143eedd9f7377e33d842be77dffadaa4b12f8be2ccee725e797b2d7e93d5c55dbc1cb35177181401f4
+      label2:
+        - a4a962fa6a13b57cb04c24821abc04dc219d4f3ffc65308bb483792e12402a983d68eb304a3af87e95ea9f9d8163ef46
 ```
 
 ## Building & Running
